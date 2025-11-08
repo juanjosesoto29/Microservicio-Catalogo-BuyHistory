@@ -1,7 +1,7 @@
 package com.buyhistory.catalogo_servicio.repository;
 
-import com.buyhistory.catalogo_servicio.entity.Product;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.buyhistory.catalogo_servicio.model.Product;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends MongoRepository<Product, Integer> {
 }

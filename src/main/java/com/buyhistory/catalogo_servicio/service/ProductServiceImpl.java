@@ -1,7 +1,7 @@
 package com.buyhistory.catalogo_servicio.service;
 
 import com.buyhistory.catalogo_servicio.dto.ProductDto;
-import com.buyhistory.catalogo_servicio.entity.Product;
+import com.buyhistory.catalogo_servicio.model.Product;
 import com.buyhistory.catalogo_servicio.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,17 +15,17 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository repository;
 
     private ProductDto map(Product p) {
-    return ProductDto.builder()
-            .id(p.getId())
-            .name(p.getName())
-            .description(p.getDescription())
-            .category(p.getCategory())
-            .price(p.getPrice())
-            .stock(p.getStock())
-            .imageUrl(p.getImageUrl())
-            .discount(p.getDiscount())
-            .build();
-    }   
+        return ProductDto.builder()
+                .id(p.getId())
+                .name(p.getName())
+                .description(p.getDescription())
+                .category(p.getCategory())
+                .price(p.getPrice())
+                .stock(p.getStock())
+                .imageUrl(p.getImageUrl())
+                .discount(p.getDiscount())
+                .build();
+    }
 
     @Override
     public List<ProductDto> findAll() {
@@ -36,7 +36,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDto findById(Long id) {
+    public ProductDto findById(Integer id) {   // 👈 Integer
         Product p = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         return map(p);

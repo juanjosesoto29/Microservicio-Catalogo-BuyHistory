@@ -1,17 +1,22 @@
-package com.buyhistory.catalogo_servicio.dto;
+package com.buyhistory.catalogo_servicio.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Data
+@Data                       // ✅ genera getId(), getName(), etc.
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductDto {
+@Document(collection = "products")
+public class Product {
 
-    private Integer id;
+    @Id
+    private Integer id;          // 👈 IMPORTANTE: se llama id
+
     private String name;
     private String description;
     private String category;

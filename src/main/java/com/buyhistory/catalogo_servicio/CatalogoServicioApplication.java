@@ -1,11 +1,13 @@
 package com.buyhistory.catalogo_servicio;
 
-import com.buyhistory.catalogo_servicio.entity.Product;
+import com.buyhistory.catalogo_servicio.model.Product;
 import com.buyhistory.catalogo_servicio.repository.ProductRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+
+import java.util.List;
 
 @SpringBootApplication
 public class CatalogoServicioApplication {
@@ -15,92 +17,76 @@ public class CatalogoServicioApplication {
     }
 
     @Bean
-    CommandLineRunner initData(ProductRepository repository) {
+    CommandLineRunner initProducts(ProductRepository repo) {
         return args -> {
-
-            if (repository.count() > 0) {
-                return; // ya hay datos, no volver a insertar
+            if (repo.count() == 0) {
+                repo.saveAll(List.of(
+                    new Product(101,
+                        "Sombrero de Napoleón",
+                        "Sombrero original del general. Ideal para cualquier ocasión.",
+                        "Histórico",
+                        120000, 10,
+                        "/imgs/sombrero-napoleon.webp",
+                        true
+                    ),
+                    new Product(102,
+                        "Máscara Egipcia",
+                        "Máscara funeraria dorada de época faraónica.",
+                        "Antigüedades",
+                        80000, 10,
+                        "/imgs/mascara-egipcia.jpg",
+                        false
+                    ),
+                    new Product(103,
+                        "Moneda Romana",
+                        "Antigua moneda de plata romana, conservada en buen estado.",
+                        "Numismática",
+                        50000, 24,
+                        "/imgs/moneda-romana.png",
+                        false
+                    ),
+                    new Product(104,
+                        "Macuquinas",
+                        "Moneda de oro macuquina de época colonial.",
+                        "Numismática",
+                        100000, 34,
+                        "/imgs/macuquinas.jpg",
+                        true
+                    ),
+                    new Product(105,
+                        "Serpiente azteca de dos cabezas",
+                        "Figura ceremonial azteca con doble cabeza, símbolo de poder.",
+                        "Arte Precolombino",
+                        250000, 2,
+                        "/imgs/serpiente-azteca.jpg",
+                        true
+                    ),
+                    new Product(106,
+                        "El penique de Maine",
+                        "Pieza histórica de Estados Unidos, raro ejemplar coleccionable.",
+                        "Numismática",
+                        40000, 10,
+                        "/imgs/penique-maine.jpg",
+                        false
+                    ),
+                    new Product(107,
+                        "Calendario Maya",
+                        "Calendario precolombino, perfectamente conservado.",
+                        "Arte Precolombino",
+                        170000, 8,
+                        "/imgs/calendario-maya.jpg",
+                        false
+                    ),
+                    new Product(108,
+                        "Máscara de Agamenón",
+                        "Máscara funeraria griega, de oro macizo.",
+                        "Antigüedades",
+                        350000, 10,
+                        "/imgs/mascara-agamenon.jpg",
+                        false
+                    )
+                ));
             }
-
-            repository.save(Product.builder()
-                    .name("Sombrero de Napoleón")
-                    .description("Sombrero original del general. Ideal para cualquier ocasión.")
-                    .category("Histórico")
-                    .price(120000.0)
-                    .stock(10)
-                    .imageUrl("/imgs/sombrero-napoleon.webp")
-                    .discount(true)
-                    .build());
-
-            repository.save(Product.builder()
-                    .name("Máscara Egipcia")
-                    .description("Máscara funeraria dorada de época faraónica.")
-                    .category("Antigüedades")
-                    .price(80000.0)
-                    .stock(10)
-                    .imageUrl("/imgs/mascara-egipcia.jpg")
-                    .discount(false)
-                    .build());
-
-            repository.save(Product.builder()
-                    .name("Moneda Romana")
-                    .description("Antigua moneda de plata romana, conservada en buen estado.")
-                    .category("Numismática")
-                    .price(50000.0)
-                    .stock(24)
-                    .imageUrl("/imgs/moneda-romana.png")
-                    .discount(false)
-                    .build());
-
-            repository.save(Product.builder()
-                    .name("Macuquinas")
-                    .description("Moneda de oro macuquina de época colonial.")
-                    .category("Numismática")
-                    .price(100000.0)
-                    .stock(34)
-                    .imageUrl("/imgs/macuquinas.jpg")
-                    .discount(true)
-                    .build());
-
-            repository.save(Product.builder()
-                    .name("Serpiente azteca de dos cabezas")
-                    .description("Figura ceremonial azteca con doble cabeza, símbolo de poder.")
-                    .category("Arte Precolombino")
-                    .price(250000.0)
-                    .stock(2)
-                    .imageUrl("/imgs/serpiente-azteca.jpg")
-                    .discount(true)
-                    .build());
-
-            repository.save(Product.builder()
-                    .name("El penique de Maine")
-                    .description("Pieza histórica de Estados Unidos, raro ejemplar coleccionable.")
-                    .category("Numismática")
-                    .price(40000.0)
-                    .stock(10)
-                    .imageUrl("/imgs/penique-maine.jpg")
-                    .discount(false)
-                    .build());
-
-            repository.save(Product.builder()
-                    .name("Calendario Maya")
-                    .description("Calendario precolombino, perfectamente conservado.")
-                    .category("Arte Precolombino")
-                    .price(170000.0)
-                    .stock(8)
-                    .imageUrl("/imgs/calendario-maya.jpg")
-                    .discount(false)
-                    .build());
-
-            repository.save(Product.builder()
-                    .name("Máscara de Agamenón")
-                    .description("Máscara funeraria griega, de oro macizo.")
-                    .category("Antigüedades")
-                    .price(350000.0)
-                    .stock(10)
-                    .imageUrl("/imgs/mascara-agamenon.jpg")
-                    .discount(false)
-                    .build());
         };
     }
 }
