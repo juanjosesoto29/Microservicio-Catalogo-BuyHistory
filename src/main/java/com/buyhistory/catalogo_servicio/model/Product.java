@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Data                       // ✅ genera getId(), getName(), etc.
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,13 +15,30 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Product {
 
     @Id
-    private Integer id;          // 👈 IMPORTANTE: se llama id
+    private Integer id;
 
     private String name;
     private String description;
     private String category;
+
+    // 💰 Precio FINAL que verá el usuario (se calcula a partir de basePrice + reglas)
     private Integer price;
+
     private Integer stock;
     private String imageUrl;
     private Boolean discount;
+
+    // 👉 NUEVOS CAMPOS PARA LAS REGLAS DE NEGOCIO
+
+    // Precio base definido por el administrador (antes de aplicar rareza/condición)
+    private Integer basePrice;
+
+    // Producto único (antigüedad única)
+    private Boolean esUnico;
+
+    // Rareza del producto: COMUN, RARO, LEGENDARIO
+    private RarezaProducto rareza;
+
+    // Condición física: EXCELENTE, BUENA, REGULAR
+    private CondicionProducto condicion;
 }

@@ -1,7 +1,10 @@
 package com.buyhistory.catalogo_servicio;
 
 import com.buyhistory.catalogo_servicio.model.Product;
+import com.buyhistory.catalogo_servicio.model.RarezaProducto;
+import com.buyhistory.catalogo_servicio.model.CondicionProducto;
 import com.buyhistory.catalogo_servicio.repository.ProductRepository;
+import com.buyhistory.catalogo_servicio.service.ProductService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.boot.SpringApplication;
@@ -17,94 +20,129 @@ public class CatalogoServicioApplication {
     }
 
     @Bean
-    CommandLineRunner initProducts(ProductRepository repo) {
+    CommandLineRunner initProducts(ProductRepository repo, ProductService productService) {
         return args -> {
             // Para evitar duplicados: solo insertamos si la colección está vacía
             if (repo.count() == 0) {
-                repo.saveAll(List.of(
-                    new Product(
-                        101,
-                        "Sombrero de Napoleón",
-                        "Sombrero original del general. Ideal para cualquier ocasión.",
-                        "Histórico",
-                        120000,
-                        10,
-                        "/imgs/sombrero-napoleon.webp",
-                        true
-                    ),
-                    new Product(
-                        102,
-                        "Máscara Egipcia",
-                        "Máscara funeraria dorada de época faraónica.",
-                        "Antigüedades",
-                        80000,
-                        10,
-                        "/imgs/mascara-egipcia.jpg",
-                        false
-                    ),
-                    new Product(
-                        103,
-                        "Moneda Romana",
-                        "Antigua moneda de plata romana, conservada en buen estado.",
-                        "Numismática",
-                        50000,
-                        24,
-                        "/imgs/moneda-romana.png",
-                        false
-                    ),
-                    new Product(
-                        104,
-                        "Macuquinas",
-                        "Moneda de oro macuquina de época colonial.",
-                        "Numismática",
-                        100000,
-                        34,
-                        "/imgs/macuquinas.jpg",
-                        true
-                    ),
-                    new Product(
-                        105,
-                        "Serpiente azteca de dos cabezas",
-                        "Figura ceremonial azteca con doble cabeza, símbolo de poder.",
-                        "Arte Precolombino",
-                        250000,
-                        2,
-                        "/imgs/serpiente-azteca.jpg",
-                        true
-                    ),
-                    new Product(
-                        106,
-                        "El penique de Maine",
-                        "Pieza histórica de Estados Unidos, raro ejemplar coleccionable.",
-                        "Numismática",
-                        40000,
-                        10,
-                        "/imgs/penique-maine.jpg",
-                        false
-                    ),
-                    new Product(
-                        107,
-                        "Calendario Maya",
-                        "Calendario precolombino, perfectamente conservado.",
-                        "Arte Precolombino",
-                        170000,
-                        8,
-                        "/imgs/calendario-maya.jpg",
-                        false
-                    ),
-                    new Product(
-                        108,
-                        "Máscara de Agamenón",
-                        "Máscara funeraria griega, de oro macizo.",
-                        "Antigüedades",
-                        350000,
-                        10,
-                        "/imgs/mascara-agamenon.jpg",
-                        false
-                    )
-                ));
 
-                System.out.println("✅ Productos iniciales cargados en MongoDB.");
+                List<Product> products = List.of(
+                    Product.builder()
+                        .id(101)
+                        .name("Sombrero de Napoleón")
+                        .description("Sombrero original del general. Ideal para cualquier ocasión.")
+                        .category("Histórico")
+                        .basePrice(120000)              // precio base
+                        .stock(1)                       // legendario y único → 1
+                        .imageUrl("/imgs/sombrero-napoleon.webp")
+                        .discount(true)
+                        .esUnico(true)
+                        .rareza(RarezaProducto.LEGENDARIO)
+                        .condicion(CondicionProducto.EXCELENTE)
+                        .build(),
+
+                    Product.builder()
+                        .id(102)
+                        .name("Máscara Egipcia")
+                        .description("Máscara funeraria dorada de época faraónica.")
+                        .category("Antigüedades")
+                        .basePrice(80000)
+                        .stock(5)                       // RARO → máx 5
+                        .imageUrl("/imgs/mascara-egipcia.jpg")
+                        .discount(false)
+                        .esUnico(false)
+                        .rareza(RarezaProducto.RARO)
+                        .condicion(CondicionProducto.BUENA)
+                        .build(),
+
+                    Product.builder()
+                        .id(103)
+                        .name("Moneda Romana")
+                        .description("Antigua moneda de plata romana, conservada en buen estado.")
+                        .category("Numismática")
+                        .basePrice(50000)
+                        .stock(24)
+                        .imageUrl("/imgs/moneda-romana.png")
+                        .discount(false)
+                        .esUnico(false)
+                        .rareza(RarezaProducto.COMUN)
+                        .condicion(CondicionProducto.BUENA)
+                        .build(),
+
+                    Product.builder()
+                        .id(104)
+                        .name("Macuquinas")
+                        .description("Moneda de oro macuquina de época colonial.")
+                        .category("Numismática")
+                        .basePrice(100000)
+                        .stock(3)                       // RARO → máx 5
+                        .imageUrl("/imgs/macuquinas.jpg")
+                        .discount(true)
+                        .esUnico(false)
+                        .rareza(RarezaProducto.RARO)
+                        .condicion(CondicionProducto.EXCELENTE)
+                        .build(),
+
+                    Product.builder()
+                        .id(105)
+                        .name("Serpiente azteca de dos cabezas")
+                        .description("Figura ceremonial azteca con doble cabeza, símbolo de poder.")
+                        .category("Arte Precolombino")
+                        .basePrice(250000)
+                        .stock(1)                       // legendario y único
+                        .imageUrl("/imgs/serpiente-azteca.jpg")
+                        .discount(true)
+                        .esUnico(true)
+                        .rareza(RarezaProducto.LEGENDARIO)
+                        .condicion(CondicionProducto.EXCELENTE)
+                        .build(),
+
+                    Product.builder()
+                        .id(106)
+                        .name("El penique de Maine")
+                        .description("Pieza histórica de Estados Unidos, raro ejemplar coleccionable.")
+                        .category("Numismática")
+                        .basePrice(40000)
+                        .stock(10)
+                        .imageUrl("/imgs/penique-maine.jpg")
+                        .discount(false)
+                        .esUnico(false)
+                        .rareza(RarezaProducto.COMUN)
+                        .condicion(CondicionProducto.REGULAR)
+                        .build(),
+
+                    Product.builder()
+                        .id(107)
+                        .name("Calendario Maya")
+                        .description("Calendario precolombino, perfectamente conservado.")
+                        .category("Arte Precolombino")
+                        .basePrice(170000)
+                        .stock(5)                       // RARO → máx 5
+                        .imageUrl("/imgs/calendario-maya.jpg")
+                        .discount(false)
+                        .esUnico(false)
+                        .rareza(RarezaProducto.RARO)
+                        .condicion(CondicionProducto.EXCELENTE)
+                        .build(),
+
+                    Product.builder()
+                        .id(108)
+                        .name("Máscara de Agamenón")
+                        .description("Máscara funeraria griega, de oro macizo.")
+                        .category("Antigüedades")
+                        .basePrice(350000)
+                        .stock(1)                       // legendario y único
+                        .imageUrl("/imgs/mascara-agamenon.jpg")
+                        .discount(false)
+                        .esUnico(true)
+                        .rareza(RarezaProducto.LEGENDARIO)
+                        .condicion(CondicionProducto.EXCELENTE)
+                        .build()
+                );
+
+                // Usamos el service para que se apliquen las reglas de negocio
+                products.forEach(productService::crearProducto);
+
+                System.out.println("✅ Productos iniciales cargados en MongoDB con lógica de negocio aplicada.");
             } else {
                 System.out.println("ℹ️ Colección 'products' ya tiene datos, no se carga seed.");
             }
