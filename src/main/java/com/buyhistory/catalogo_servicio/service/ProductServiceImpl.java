@@ -1,136 +1,161 @@
 package com.buyhistory.catalogo_servicio.service;
 
+import com.buyhistory.catalogo_servicio.dto.ProductDto;
 import com.buyhistory.catalogo_servicio.model.Product;
-import com.buyhistory.catalogo_servicio.model.RarezaProducto;
-import com.buyhistory.catalogo_servicio.model.CondicionProducto;
 import com.buyhistory.catalogo_servicio.repository.ProductRepository;
-import com.buyhistory.catalogo_servicio.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductServiceImpl implements ProductService {
 
-    private final ProductRepository productRepository;
+    private final ProductRepository repo;
 
-    // ===========================
-    // CRUD + reglas de negocio
-    // ===========================
+    // ---------- CRUD ----------
 
     @Override
-    public Product crearProducto(Product product) {
-        aplicarLogicaNegocio(product);
-        return productRepository.save(product);
-    }
-
-    @Override
-    public Product actualizarProducto(Integer id, Product actualizado) {
-        Product existente = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-
-        existente.setName(actualizado.getName());
-        existente.setDescription(actualizado.getDescription());
-        existente.setCategory(actualizado.getCategory());
-        existente.setBasePrice(actualizado.getBasePrice());
-        existente.setStock(actualizado.getStock());
-        existente.setImageUrl(actualizado.getImageUrl());
-        existente.setDiscount(actualizado.getDiscount());
-        existente.setEsUnico(actualizado.getEsUnico());
-        existente.setRareza(actualizado.getRareza());
-        existente.setCondicion(actualizado.getCondicion());
-
-        aplicarLogicaNegocio(existente);
-
-        return productRepository.save(existente);
+    public ProductDto crear(ProductDto dto) {
+        Product entity = toEntity(dto);
+        aplicarReglasDeNegocio(entity);
+        Product saved = repo.save(entity);
+        return toDto(saved);
     }
 
     @Override
-    public Product obtenerPorId(Integer id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+    @Transactional(readOnly = true)
+    public ProductDto obtenerPorId(Long id) {
+        Product p = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + id));
+        return toDto(p);
     }
 
     @Override
-    public List<Product> obtenerTodos() {
-        return productRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<ProductDto> obtenerTodos() {
+        return repo.findAll()
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
     @Override
-    public void eliminar(Integer id) {
-        productRepository.deleteById(id);
+    public ProductDto actualizar(Long id, ProductDto dto) {
+        Product existente = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + id));
+
+        existente.setName(dto.getName());
+        existente.setDescription(dto.getDescription());
+        existente.setCategory(dto.getCategory());
+        existente.setPrice(dto.getPrice());
+        existente.setStock(dto.getStock());
+        existente.setImageUrl(dto.getImageUrl());
+        existente.setDiscount(
+                dto.getDiscount() != null ? dto.getDiscount() : Boolean.FALSE
+        );
+        existente.setRarity(dto.getRarity());
+        existente.setCondition(dto.getCondition());
+
+        aplicarReglasDeNegocio(existente);
+
+        Product guardado = repo.save(existente);
+        return toDto(guardado);
     }
 
-
-    // ===========================
-    //  REGLAS DE NEGOCIO
-    // ===========================
-
-    private void aplicarLogicaNegocio(Product p) {
-        validarProductoUnico(p);
-        aplicarReglasRareza(p);
-        calcularPrecioFinal(p);
-    }
-
-    // 1️⃣ PRODUCTOS ÚNICOS → stock = 1
-    private void validarProductoUnico(Product p) {
-        if (Boolean.TRUE.equals(p.getEsUnico()) &&
-            p.getStock() != null &&
-            p.getStock() > 1) {
-
-            throw new IllegalArgumentException(
-                "Los productos marcados como ÚNICOS no pueden tener más de 1 unidad en stock."
-            );
+    @Override
+    public void eliminar(Long id) {
+        if (!repo.existsById(id)) {
+            throw new RuntimeException("Producto no encontrado: " + id);
         }
+        repo.deleteById(id);
     }
 
-    // 2️⃣ RAREZA → reglas específicas
-    private void aplicarReglasRareza(Product p) {
-        if (p.getRareza() == null) return;
+    // ---------- Reglas de negocio ----------
 
-        switch (p.getRareza()) {
-            case COMUN -> { }
+    private void aplicarReglasDeNegocio(Product p) {
+        String rarity = p.getRarity();
+        String condition = p.getCondition();
 
-            case RARO -> {
-                if (p.getStock() != null && p.getStock() > 5) {
-                    throw new IllegalArgumentException(
-                        "Los productos RAROS no pueden tener más de 5 unidades."
-                    );
-                }
-            }
+        if (rarity != null) rarity = rarity.trim().toUpperCase();
+        if (condition != null) condition = condition.trim().toUpperCase();
 
-            case LEGENDARIO -> {
-                p.setEsUnico(true);
-                p.setStock(1);
+        int price = p.getPrice() != null ? p.getPrice() : 0;
+        int stock = p.getStock() != null ? p.getStock() : 0;
+
+        // 1) Rareza
+        if (rarity == null || rarity.isBlank()) {
+            if (price >= 200_000 || stock <= 1) {
+                rarity = "UNICO";
+            } else if (price >= 80_000 || stock <= 5) {
+                rarity = "RARO";
+            } else {
+                rarity = "COMUN";
             }
         }
-    }
 
-    // 3️⃣ PRECIOS DINÁMICOS (condición + rareza)
-    private void calcularPrecioFinal(Product p) {
-
-        if (p.getBasePrice() == null) {
-            throw new IllegalArgumentException("basePrice es obligatorio.");
+        // 2) Condición
+        if (condition == null || condition.isBlank()) {
+            if (price >= 150_000) {
+                condition = "EXCELENTE";
+            } else if (price >= 60_000) {
+                condition = "BUENO";
+            } else {
+                condition = "REGULAR";
+            }
         }
 
-        int base = p.getBasePrice();
+        // 3) Si es único, stock = 1
+        if ("UNICO".equals(rarity)) {
+            stock = 1;
+        }
 
-        double factorCondicion = switch (p.getCondicion()) {
-            case EXCELENTE -> 1.10;
-            case BUENA     -> 1.00;
-            case REGULAR   -> 0.90;
-        };
+        // 4) Si discount es null, poner false
+        if (p.getDiscount() == null) {
+            p.setDiscount(Boolean.FALSE);
+        }
 
-        double factorRareza = switch (p.getRareza()) {
-            case COMUN      -> 1.00;
-            case RARO       -> 1.20;
-            case LEGENDARIO -> 1.50;
-        };
-
-        int precioFinal = (int) Math.round(base * factorCondicion * factorRareza);
-        p.setPrice(precioFinal);
+        p.setRarity(rarity);
+        p.setCondition(condition);
+        p.setStock(stock);
     }
 
+    // ---------- Mapeos DTO <-> Entidad ----------
+
+    private ProductDto toDto(Product p) {
+        if (p == null) return null;
+
+        return ProductDto.builder()
+                .id(p.getId())
+                .name(p.getName())
+                .description(p.getDescription())
+                .category(p.getCategory())
+                .price(p.getPrice())
+                .stock(p.getStock())
+                .imageUrl(p.getImageUrl())
+                .discount(p.getDiscount())
+                .rarity(p.getRarity())
+                .condition(p.getCondition())
+                .build();
+    }
+
+    private Product toEntity(ProductDto dto) {
+        if (dto == null) return null;
+
+        return Product.builder()
+                .id(dto.getId())
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .category(dto.getCategory())
+                .price(dto.getPrice())
+                .stock(dto.getStock())
+                .imageUrl(dto.getImageUrl())
+                .discount(dto.getDiscount() != null ? dto.getDiscount() : Boolean.FALSE)
+                .rarity(dto.getRarity())
+                .condition(dto.getCondition())
+                .build();
+    }
 }

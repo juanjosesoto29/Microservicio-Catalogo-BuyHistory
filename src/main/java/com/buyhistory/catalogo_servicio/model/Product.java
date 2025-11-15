@@ -1,44 +1,41 @@
 package com.buyhistory.catalogo_servicio.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
+import lombok.*;
 
-@Data
-@Builder
-@AllArgsConstructor
+@Entity
+@Table(name = "products")
+@Getter
+@Setter
 @NoArgsConstructor
-@Document(collection = "products")
+@AllArgsConstructor
+@Builder
 public class Product {
 
     @Id
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String name;
+
+    @Column(length = 500)
     private String description;
+
     private String category;
 
-    // 💰 Precio FINAL que verá el usuario (se calcula a partir de basePrice + reglas)
     private Integer price;
 
     private Integer stock;
+
+    @Column(name = "image_url")
     private String imageUrl;
+
+    @Column(nullable = false)
     private Boolean discount;
 
-    // 👉 NUEVOS CAMPOS PARA LAS REGLAS DE NEGOCIO
+    private String rarity;
 
-    // Precio base definido por el administrador (antes de aplicar rareza/condición)
-    private Integer basePrice;
-
-    // Producto único (antigüedad única)
-    private Boolean esUnico;
-
-    // Rareza del producto: COMUN, RARO, LEGENDARIO
-    private RarezaProducto rareza;
-
-    // Condición física: EXCELENTE, BUENA, REGULAR
-    private CondicionProducto condicion;
+    // "condition" es palabra reservada en SQL, mejor renombrar la columna
+    @Column(name = "product_condition")
+    private String condition;
 }

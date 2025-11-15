@@ -1,18 +1,18 @@
 package com.buyhistory.catalogo_servicio.service;
 
-import com.buyhistory.catalogo_servicio.model.Product;
+import com.buyhistory.catalogo_servicio.dto.ProductDto;
 
 import java.util.List;
 
 public interface ProductService {
 
-    Product crearProducto(Product product);
+    ProductDto crear(ProductDto dto);
 
-    Product actualizarProducto(Integer id, Product product);
+    ProductDto obtenerPorId(Long id);
 
-    List<Product> obtenerTodos();
+    List<ProductDto> obtenerTodos();
 
-    Product obtenerPorId(Integer id);
+    ProductDto actualizar(Long id, ProductDto dto);
 
-    void eliminar(Integer id);
+    void eliminar(Long id);
 }
