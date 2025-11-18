@@ -1,6 +1,5 @@
 package com.buyhistory.catalogo_servicio.dto;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
